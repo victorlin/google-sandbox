@@ -17,7 +17,7 @@ const createWindow = () => {
 app.whenReady().then(createWindow).catch(e => console.log(e))
 app.on('ready', async () => {
   try {
-    await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj'))
+    await session.defaultSession.loadExtension('./extensions/simplify_gmail/')
   } catch(e) {
     console.log(e)
   }
