@@ -19,10 +19,9 @@ const createWindow = () => {
   })
 }
 
-app.whenReady().then(createWindow).catch(e => console.log(e))
-
 app.on('ready', async () => {
   try {
+    createWindow()
     await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj/1.7.17_0/'))
   } catch(e) {
     console.log(e)
