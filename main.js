@@ -7,9 +7,6 @@ const createWindow = () => {
     width: 1300,
     height: 900,
     title: 'Gmail',
-    webPreferences: {
-      nodeIntegration: true,
-    },
   })
 
   win.loadURL('https://www.gmail.com')
