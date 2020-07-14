@@ -9,7 +9,8 @@ const createWindow = () => {
     }
   })
 
-  win.loadFile('index.html')
+  // win.loadFile('index.html')
+  win.loadURL('https://www.gmail.com')
   // win.webContents.openDevTools()
 }
 
