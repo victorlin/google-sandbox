@@ -5,14 +5,16 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   })
 
   // win.loadFile('index.html')
   win.loadURL('https://www.gmail.com')
   // win.webContents.openDevTools()
 }
+
+// const simplifyGoogleExtension =  installExtension('pbmlfaiicoikhdbjagjbglnbfcbcojpj')
 
 app.whenReady().then(createWindow)
 
@@ -23,7 +25,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if(BrowserWindow.getAllWindows().length === 0){
+  if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
 })
