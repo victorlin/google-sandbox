@@ -1,6 +1,4 @@
 const { app, BrowserWindow, session } = require('electron')
-const path = require('path')
-const os = require('os')
 
 const createWindow = () => {
   const win = new BrowserWindow({
