@@ -13,6 +13,10 @@ const createWindow = () => {
   })
 
   win.loadURL('https://www.gmail.com')
+  win.webContents.on('new-window', (e, url) => {
+    e.preventDefault()
+    require('electron').shell.openExternal(url)
+  })
 }
 
 app.whenReady().then(createWindow).catch(e => console.log(e))
