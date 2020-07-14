@@ -1,22 +1,27 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, session } = require('electron')
+const path = require('path')
+const os = require('os')
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1300,
+    height: 900,
     webPreferences: {
       nodeIntegration: true,
     },
   })
 
-  // win.loadFile('index.html')
   win.loadURL('https://www.gmail.com')
-  // win.webContents.openDevTools()
+  //~/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj
 }
-
-// const simplifyGoogleExtension =  installExtension('pbmlfaiicoikhdbjagjbglnbfcbcojpj')
-
-app.whenReady().then(createWindow)
+app.whenReady().then(createWindow).catch(e => console.log(e))
+app.on('ready', async () => {
+  try {
+    await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj'))
+  } catch(e) {
+    console.log(e)
+  }
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
