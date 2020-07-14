@@ -11,9 +11,10 @@ const createWindow = () => {
   })
 
   win.loadURL('https://www.gmail.com')
-  //~/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj
 }
+
 app.whenReady().then(createWindow).catch(e => console.log(e))
+
 app.on('ready', async () => {
   try {
     await session.defaultSession.loadExtension('./extensions/simplify_gmail/')
