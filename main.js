@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session } = require('electron')
+const { app, BrowserWindow, session, Notification } = require('electron')
 const os = require('os')
 const path = require('path')
 
@@ -21,7 +21,14 @@ app.on('ready', async () => {
   try {
     await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj/1.7.17_0/'))
   } catch(e) {
-    console.log(e)
+    // console.log(e)
+    if (Notification.isSupported()) {
+      const notify = new Notification({title: 'Error Loading Simplify Gmail Extension', body: 'Click this notification to install Simplify Gmail extension'})
+      notify.show()
+      notify.on('click', () => require('electron').shell.openExternal('https://chrome.google.com/webstore/detail/simplify-gmail/pbmlfaiicoikhdbjagjbglnbfcbcojpj'))
+    } else {
+      console.log(e)
+    }
   }
 })
 
