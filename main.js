@@ -19,7 +19,11 @@ const createWindow = () => {
 app.on('ready', async () => {
   createWindow()
   try {
-    await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj/1.7.17_0/'))
+    if (process.platform === 'darwin'){
+      await session.defaultSession.loadExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/pbmlfaiicoikhdbjagjbglnbfcbcojpj/1.7.17_0/'))
+    } else if (process.platform === 'win32') {
+      await session.defaultSession.loadExtension("%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Extensions\\pbmlfaiicoikhdbjagjbglnbfcbcojpj\\1.7.17_0\\")
+    }
   } catch(e) {
     // console.log(e)
     if (Notification.isSupported()) {
