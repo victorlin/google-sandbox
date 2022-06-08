@@ -1,2 +1,3 @@
 node_modules/
-Gmail Electron-darwin-x64/
+out/
+build/
