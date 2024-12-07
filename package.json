@@ -11,7 +11,7 @@
     "make": "tsc && electron-forge make",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Mark Vander Lugt",
+  "author": "Victor Lin",
   "license": "Apache-2.0",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.63",
