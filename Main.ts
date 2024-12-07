@@ -7,9 +7,7 @@ export default class Main {
     static BrowserWindow;
 
     private static onWindowAllClosed() {
-        if (process.platform !== 'darwin') {
-            Main.application.quit();
-        }
+        Main.application.quit();
     }
 
     private static onClose() {
