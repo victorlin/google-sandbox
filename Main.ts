@@ -18,10 +18,11 @@ export default class Main {
 
     private static onReady() {
         Main.mainWindow = new Main.BrowserWindow({
-            width: 1300, height: 900,
             title: 'Gmail',
             icon: path.join(Main.application.getAppPath(), 'icons/icon.png')
         });
+
+        Main.mainWindow.maximize();
 
         Main.mainWindow.loadURL('https://mail.google.com')
             .then(() => {});
