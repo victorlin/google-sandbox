@@ -2,24 +2,17 @@
   "name": "gmail-electron",
   "productName": "gmail-electron",
   "version": "0.1.0",
-  "description": "",
   "main": "build/App.js",
   "scripts": {
     "compile": "tsc",
     "start": "tsc && electron-forge start",
     "package": "tsc && electron-forge package",
-    "make": "tsc && electron-forge make",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "make": "tsc && electron-forge make"
   },
   "author": "Victor Lin",
   "license": "Apache-2.0",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.63",
-    "@electron-forge/maker-deb": "^6.0.0-beta.63",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.63",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
-    "@electron-forge/maker-zip": "^6.0.0-beta.63",
-    "@electron-forge/plugin-webpack": "~6.0.0-beta.63",
     "@types/electron": "^1.6.10",
     "electron": "~19.0.4",
     "typescript": "^4.7.3"
@@ -27,26 +20,7 @@
   "config": {
     "forge": {
       "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {
-            "name": "Gmail",
-            "options": {
-              "name": "gmail",
-              "version": "1.0.0",
-              "productName": "Gmail",
-              "description": "Gmail by Google",
-              "icon": "icons/icon.svg",
-              "maintainer": "Mark Vander Lugt",
-              "homepage": "https://github.com/mvanderlugt/gmail-electron"
-            }
-          }
-        }
-      ]
+      "makers": []
     }
-  },
-  "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
   }
 }
