@@ -1,7 +1,8 @@
-# Gmail - Electron
+# Google Sandbox
 
 ## Description
-Electron app using typescript to render Gmail
+
+A lightweight, self-contained browser for Google applications.
 
 ## To Run:
 1. Clone repository

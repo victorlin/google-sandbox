@@ -7,7 +7,7 @@ const config: ForgeConfig = {
     {
       name: '@electron-forge/maker-dmg',
       config: {
-        name: 'Gmail',
+        name: 'Google Sandbox',
         icon: 'icons/icon.png'
       }
     },

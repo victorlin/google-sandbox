@@ -1,14 +1,27 @@
 <body>
-    <input type="text" id="input" style="width: 100%; height: 100%; box-sizing: border-box; padding: 10px; font-size: 16px;" autofocus/>
-    <script>
-      const input = document.getElementById('input');
-      input.addEventListener('keyup', (event) => {
-        if (event.key === 'Enter') {
-          const url = input.value.trim();
-          if (url) {
-            window.location.href = url;
-          }
-        }
-      });
-    </script>
+    <input type="text" id="input" style="width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px;" autofocus/>
 </body>
+
+<script>
+  const input = document.getElementById('input');
+  input.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') {
+      const url = input.value.trim();
+      if (url) {
+        window.location.href = url;
+      }
+    }
+  });
+</script>
+
+<style>
+body {
+  display: flex;
+  align-items: center;
+  background-color: light-dark(black, white);
+}
+
+a {
+  color: light-dark(white, black);
+}
+</style>
