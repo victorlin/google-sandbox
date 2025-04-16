@@ -1,4 +1,5 @@
 import {app, BrowserWindow, globalShortcut, shell} from 'electron'
+import * as path from 'path';
 
 function createWindow(url: string) {
     console.log(`Opening URL in a new window: ${url}`)
@@ -30,21 +31,7 @@ function openNewUrlWindow() {
     console.log(`Opening an empty window.`)
     const window = new BrowserWindow()
     window.maximize()
-    window.loadURL(`data:text/html, <body>
-        <input type="text" id="input" style="width: 100%; height: 100%; box-sizing: border-box; padding: 10px; font-size: 16px;" autofocus/>
-        <script>
-          const input = document.getElementById('input');
-          input.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-              const url = input.value.trim();
-              if (url) {
-                window.location.href = url;
-              }
-            }
-          });
-        </script>
-    </body>`)
-
+    window.loadFile(path.join(__dirname, 'new-window.html'))
     window.once('ready-to-show', () => {
         window.show()
         window.webContents.focus()

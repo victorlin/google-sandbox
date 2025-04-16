@@ -4,10 +4,9 @@
   "version": "0.1.0",
   "main": "build/App.js",
   "scripts": {
-    "compile": "tsc",
-    "start": "tsc && electron-forge start",
-    "package": "tsc && electron-forge package",
-    "make": "tsc && electron-forge make"
+    "build": "tsc && cp new-window.html build",
+    "start": "npm run build && electron-forge start",
+    "make": "npm run build && electron-forge make"
   },
   "author": "Victor Lin",
   "license": "Apache-2.0",
