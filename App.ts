@@ -1,5 +1,31 @@
-import {app, BrowserWindow, Menu, MenuItem, shell} from 'electron'
-import * as path from 'path';
+import {app, BrowserWindow, ipcMain, Menu, MenuItem, shell} from 'electron'
+import * as path from 'path'
+import * as fs from 'fs'
+
+function getGoogleAccounts(): string[] {
+    try {
+        const configPath = path.join(app.getAppPath(), 'build', 'config.json')
+        const rawData = fs.readFileSync(configPath)
+        const config = JSON.parse(rawData.toString())
+        return config.googleAccounts || []
+    } catch (error) {
+        console.error('Failed to read or parse config.json:', error)
+        return []
+    }
+}
+
+let selectedAccount: string | null = null
+
+// Listen for the selected account from the renderer process
+ipcMain.on('set-selected-account', (event, account) => {
+    console.log('Selected account received in main:', account)
+    selectedAccount = account
+})
+
+// IPC handler for renderer to request accounts
+ipcMain.handle('get-google-accounts', async (event) => {
+  return getGoogleAccounts();
+});
 
 const menu = new Menu()
 menu.append(new MenuItem({
@@ -22,9 +48,21 @@ menu.append(new MenuItem({
     submenu: [
         {
             role: 'help',
+            label: 'Open Account Selection',
+            accelerator: process.platform === 'darwin' ? 'Cmd+N' : 'Ctrl+N',
+            click: () => { createWindow() }
+        },
+        {
+            role: 'help',
             label: 'Open Mail',
             accelerator: process.platform === 'darwin' ? 'Cmd+1' : 'Ctrl+1',
-            click: () => { createWindow('https://mail.google.com') }
+            click: () => {
+                let url = 'https://mail.google.com'
+                if (selectedAccount) {
+                    url = `https://mail.google.com/mail/u/?authuser=${selectedAccount}`
+                }
+                createWindow(url)
+            }
         },
         {
             role: 'help',
@@ -36,7 +74,13 @@ menu.append(new MenuItem({
             role: 'help',
             label: 'Open Calendar',
             accelerator: process.platform === 'darwin' ? 'Cmd+3' : 'Ctrl+3',
-            click: () => { createWindow('https://calendar.google.com') }
+            click: () => {
+                let url = 'https://calendar.google.com/calendar'
+                if (selectedAccount) {
+                    url = `https://calendar.google.com/calendar/u/?authuser=${selectedAccount}`
+                }
+                createWindow(url)
+            }
         },
         {
             role: 'help',
@@ -50,7 +94,11 @@ menu.append(new MenuItem({
 Menu.setApplicationMenu(menu)
 
 function createWindow(url?: string) {
-    const window = new BrowserWindow()
+    const window = new BrowserWindow({
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
 
     if (url === undefined) {
         console.log(`Opening an empty window.`)
@@ -60,14 +108,24 @@ function createWindow(url?: string) {
         console.log(`Opening URL in a new window: ${url}`)
         window.loadURL(url)
         window.maximize()
-        window.webContents.setWindowOpenHandler(({url}) => {
-            if (url.includes('google.com') && !url.startsWith('https://www.google.com/url')) {
-                createWindow(url)
+        window.webContents.setWindowOpenHandler(({ url: newUrl }) => {
+            if (newUrl.includes('google.com') && !newUrl.startsWith('https://www.google.com/url')) {
+                // When opening subsequent google.com links, we should also append the authuser
+                let finalNewUrl = newUrl
+                if (selectedAccount && (newUrl.includes('mail.google.com') || newUrl.includes('calendar.google.com'))) {
+                    if (newUrl.includes('?')) {
+                        finalNewUrl += `&authuser=${selectedAccount}`
+                    } else {
+                        finalNewUrl += `?authuser=${selectedAccount}`
+                    }
+                }
+                createWindow(finalNewUrl)
                 return { action: 'deny' }
             } else {
-                console.log(`Opening URL in default web browser: ${url}`)
-                shell.openExternal(url)
+                console.log(`Opening URL in default web browser: ${newUrl}`)
+                shell.openExternal(newUrl)
                     .then(() => {})
+                    .catch(err => console.error('Failed to open external URL:', err))
                 return { action: 'deny' }
             }
         })

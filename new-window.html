@@ -1,27 +1,149 @@
 <body>
-    <input type="text" id="input" style="width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px;" autofocus/>
+    <div id="accountSelectionContainer">
+        <!-- Radio buttons will be generated here -->
+    </div>
+    <div id="serviceButggtonsContainer">
+        <ul>
+            <li>Mail: CMD+1</li>
+            <li>YouTube Studio: CMD+2</li>
+            <li>Calendar: CMD+3</li>
+            <li>Maps: CMD+4</li>
+        </ul>
+    </div>
+    <input id="urlInput" type="text" />
 </body>
 
 <script>
-  const input = document.getElementById('input');
-  input.addEventListener('keyup', (event) => {
+  const urlInput = document.getElementById('urlInput');
+  const accountSelectionContainer = document.getElementById('accountSelectionContainer');
+  let currentlySelectedAccount = '';
+
+  urlInput.addEventListener('keyup', (event) => {
     if (event.key === 'Enter') {
-      const url = input.value.trim();
+      const url = urlInput.value.trim();
       if (url) {
-        window.location.href = url;
+        // Try to prepend https:// if no scheme is present
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          window.location.href = 'https://' + url;
+        } else {
+          window.location.href = url;
+        }
       }
     }
   });
+
+  function sendSelectedAccountToApp(account) {
+    if (account === undefined || account === null) {
+      window.electronAPI.setSelectedAccount(null);
+      localStorage.removeItem('selectedGoogleAccount');
+      currentlySelectedAccount = null;
+      console.log('No account selected or available. Cleared selection.');
+    } else {
+      window.electronAPI.setSelectedAccount(account);
+      localStorage.setItem('selectedGoogleAccount', account);
+      currentlySelectedAccount = account;
+      console.log('Selected and sent to app:', account);
+    }
+  }
+
+  function setupRadioListeners() {
+    const accountSelectors = document.querySelectorAll('input[name="googleAccount"]');
+    accountSelectors.forEach(item => {
+      item.addEventListener('change', () => {
+        sendSelectedAccountToApp(item.value);
+      });
+    });
+  }
+
+  async function populateAccountOptions() {
+    try {
+      // Clear existing options
+      accountSelectionContainer.innerHTML = '';
+
+      const accounts = await window.electronAPI.getGoogleAccounts();
+
+      if (!accounts || accounts.length === 0) {
+        accountSelectionContainer.textContent = 'No accounts configured in config.json.';
+        sendSelectedAccountToApp(null);
+        return;
+      }
+
+      const lastUsedAccount = localStorage.getItem('selectedGoogleAccount');
+      // Default to the last used account if available, otherwise first account in the list
+      let preselectedAccount = (lastUsedAccount && accounts.includes(lastUsedAccount)) ? lastUsedAccount : accounts[0];
+
+      accounts.forEach((account) => {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'googleAccount';
+        input.value = account;
+        if (account === preselectedAccount) {
+          input.checked = true;
+        }
+
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(` ${account}`));
+        accountSelectionContainer.appendChild(label);
+      });
+
+      setupRadioListeners();
+
+      sendSelectedAccountToApp(preselectedAccount);
+
+    } catch (error) {
+      console.error('Error populating accounts:', error);
+      accountSelectionContainer.textContent = 'Error loading accounts. Check console.';
+      sendSelectedAccountToApp(null);
+    }
+  }
+
+  // Initial population
+  if (window.electronAPI && typeof window.electronAPI.getGoogleAccounts === 'function') {
+    populateAccountOptions();
+  } else {
+    console.error('electronAPI not found or getGoogleAccounts is not a function. Preload script might not be loaded correctly.');
+    accountSelectionContainer.textContent = 'Error: Preload script not loaded.';
+  }
 </script>
 
 <style>
 body {
   display: flex;
+  flex-direction: column;
   align-items: center;
   background-color: light-dark(black, white);
+  color: light-dark(white, black);
+  font-family: sans-serif;
 }
 
-a {
-  color: light-dark(white, black);
+
+#accountSelectionContainer, #serviceButtonsContainer {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
 }
+
+#accountSelectionContainer {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid light-dark(gray, lightgray);
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+#urlInput {
+  margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+
 </style>
