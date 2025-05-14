@@ -3,6 +3,10 @@
   "productName": "Google Sandbox",
   "version": "0.1.0",
   "main": "build/App.js",
+  "engines": {
+    "node": "^20",
+    "npm": "^10"
+  },
   "scripts": {
     "build": "tsc && cp new-window.html build && cp preload.js build && cp config.json build",
     "start": "npm run build && electron-forge start",
