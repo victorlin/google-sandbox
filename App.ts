@@ -39,6 +39,40 @@ menu.append(new MenuItem({
 }))
 menu.append(new MenuItem({
     role: 'viewMenu',
+    submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+        { type: 'separator' },
+        {
+            label: 'Back',
+            accelerator: process.platform === 'darwin' ? 'Cmd+[' : 'Alt+Left',
+            click: () => BrowserWindow.getFocusedWindow()?.webContents.navigationHistory.goBack()
+        },
+        {
+            visible: false,
+            label: 'Back',
+            accelerator: 'Cmd+Left',
+            click: () => BrowserWindow.getFocusedWindow()?.webContents.navigationHistory.goBack()
+        },
+        {
+            label: 'Forward',
+            accelerator: process.platform === 'darwin' ? 'Cmd+]' : 'Alt+Right',
+            click: () => BrowserWindow.getFocusedWindow()?.webContents.navigationHistory.goForward()
+        },
+        {
+            visible: false,
+            label: 'Forward',
+            accelerator: 'Cmd+Right',
+            click: () => BrowserWindow.getFocusedWindow()?.webContents.navigationHistory.goForward()
+        }
+    ]
 }))
 menu.append(new MenuItem({
     role: 'windowMenu',
