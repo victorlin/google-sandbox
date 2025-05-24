@@ -100,14 +100,8 @@ menu.append(new MenuItem({
         },
         {
             role: 'help',
-            label: 'Open Youtube Studio',
-            accelerator: process.platform === 'darwin' ? 'Cmd+2' : 'Ctrl+2',
-            click: () => { createWindow('https://studio.youtube.com') }
-        },
-        {
-            role: 'help',
             label: 'Open Calendar',
-            accelerator: process.platform === 'darwin' ? 'Cmd+3' : 'Ctrl+3',
+            accelerator: process.platform === 'darwin' ? 'Cmd+2' : 'Ctrl+2',
             click: () => {
                 let url = 'https://calendar.google.com/calendar'
                 if (selectedAccount) {
@@ -118,8 +112,50 @@ menu.append(new MenuItem({
         },
         {
             role: 'help',
-            label: 'Open Maps',
+            label: 'Open Voice',
+            accelerator: process.platform === 'darwin' ? 'Cmd+3' : 'Ctrl+3',
+            click: () => {
+                let url = 'https://voice.google.com/'
+                if (selectedAccount) {
+                    url = `https://voice.google.com/u/?authuser=${selectedAccount}`
+                }
+                createWindow(url)
+            }
+        },
+        {
+            role: 'help',
+            label: 'Open Drive',
             accelerator: process.platform === 'darwin' ? 'Cmd+4' : 'Ctrl+4',
+            click: () => {
+                let url = 'https://drive.google.com/'
+                if (selectedAccount) {
+                    url = `https://drive.google.com/u/?authuser=${selectedAccount}`
+                }
+                createWindow(url)
+            }
+        },
+        {
+            role: 'help',
+            label: 'Open Photos',
+            accelerator: process.platform === 'darwin' ? 'Cmd+5' : 'Ctrl+5',
+            click: () => {
+                let url = 'https://photos.google.com/'
+                if (selectedAccount) {
+                    url = `https://photos.google.com/u/?authuser=${selectedAccount}`
+                }
+                createWindow(url)
+            }
+        },
+        {
+            role: 'help',
+            label: 'Open Youtube Studio',
+            accelerator: process.platform === 'darwin' ? 'Cmd+6' : 'Ctrl+6',
+            click: () => { createWindow('https://studio.youtube.com') }
+        },
+        {
+            role: 'help',
+            label: 'Open Maps',
+            accelerator: process.platform === 'darwin' ? 'Cmd+7' : 'Ctrl+7',
             click: () => { createWindow('https://maps.google.com') }
         },
     ]
