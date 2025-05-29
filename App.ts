@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, Menu, MenuItem, shell} from 'electron'
+import {app, BrowserWindow, ipcMain, Menu, MenuItem, nativeTheme, shell} from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -95,7 +95,7 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://mail.google.com/mail/u/?authuser=${selectedAccount}`
                 }
-                createWindow(url)
+                createWindow({ url, useDarkFallback: true })
             }
         },
         {
@@ -107,7 +107,7 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://calendar.google.com/calendar/u/?authuser=${selectedAccount}`
                 }
-                createWindow(url)
+                createWindow({ url })
             }
         },
         {
@@ -119,7 +119,7 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://voice.google.com/u/?authuser=${selectedAccount}`
                 }
-                createWindow(url)
+                createWindow({ url })
             }
         },
         {
@@ -131,7 +131,7 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://drive.google.com/u/?authuser=${selectedAccount}`
                 }
-                createWindow(url)
+                createWindow({ url })
             }
         },
         {
@@ -143,31 +143,46 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://photos.google.com/u/?authuser=${selectedAccount}`
                 }
-                createWindow(url)
+                createWindow({ url })
             }
         },
         {
             role: 'help',
             label: 'Open Youtube Studio',
             accelerator: process.platform === 'darwin' ? 'Cmd+6' : 'Ctrl+6',
-            click: () => { createWindow('https://studio.youtube.com') }
+            click: () => { createWindow({ url: 'https://studio.youtube.com' }) }
         },
         {
             role: 'help',
             label: 'Open Maps',
             accelerator: process.platform === 'darwin' ? 'Cmd+7' : 'Ctrl+7',
-            click: () => { createWindow('https://maps.google.com') }
+            click: () => { createWindow({ url: 'https://maps.google.com' }) }
         },
     ]
 }))
 
 Menu.setApplicationMenu(menu)
 
-function createWindow(url?: string) {
+function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkFallback?: boolean } = {}) {
     const window = new BrowserWindow({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         }
+    });
+
+    // Conditionally inject fallback dark-mode CSS
+    window.webContents.on('did-finish-load', () => {
+      if (useDarkFallback && nativeTheme.shouldUseDarkColors) {
+        window.webContents.insertCSS(`
+          html {
+            filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(1.2) !important;
+            background: #121212 !important;
+          }
+          img, video, [style*="background-image"] {
+            filter: invert(100%) hue-rotate(180deg) !important;
+          }
+        `);
+      }
     });
 
     if (url === undefined) {
@@ -189,7 +204,7 @@ function createWindow(url?: string) {
                         finalNewUrl += `?authuser=${selectedAccount}`
                     }
                 }
-                createWindow(finalNewUrl)
+                createWindow({ url: finalNewUrl })
                 return { action: 'deny' }
             } else {
                 console.log(`Opening URL in default web browser: ${newUrl}`)
