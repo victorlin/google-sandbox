@@ -15,6 +15,7 @@ function getGoogleAccounts(): string[] {
 }
 
 let selectedAccount: string | null = null
+let startWindow: BrowserWindow | null = null
 
 // Listen for the selected account from the renderer process
 ipcMain.on('set-selected-account', (event, account) => {
@@ -186,11 +187,17 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
     });
 
     if (url === undefined) {
-        console.log(`Opening an empty window.`)
-        window.loadFile(path.join(__dirname, 'new-window.html'))
+        console.log(`Opening the start window.`)
+        window.loadFile(path.join(__dirname, 'start.html'))
+        startWindow = window
     }
     else {
         console.log(`Opening URL in a new window: ${url}`)
+        // Close the start window if it exists
+        if (startWindow && !startWindow.isDestroyed()) {
+            startWindow.close()
+            startWindow = null
+        }
         window.loadURL(url)
         window.maximize()
         window.webContents.setWindowOpenHandler(({ url: newUrl }) => {

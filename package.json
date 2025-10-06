@@ -8,7 +8,7 @@
     "npm": "^11"
   },
   "scripts": {
-    "build": "tsc && cp new-window.html build && cp preload.js build && cp config.json build",
+    "build": "tsc && cp start.html build && cp preload.js build && cp config.json build",
     "start": "npm run build && electron-forge start",
     "make": "npm run build && electron-forge make"
   },
