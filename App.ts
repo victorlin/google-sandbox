@@ -201,6 +201,17 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
         window.loadURL(url)
         window.maximize()
         window.webContents.setWindowOpenHandler(({ url: newUrl }) => {
+            const url = new URL(newUrl);
+            const isShiftClick = url.searchParams.get('_shiftClick') === '1';
+
+            if (isShiftClick) {
+                // Remove the marker parameter and open in app window
+                url.searchParams.delete('_shiftClick');
+                const finalUrl = url.toString();
+                createWindow({ url: finalUrl });
+                return { action: 'deny' };
+            }
+
             if (newUrl.includes('google.com') && !newUrl.startsWith('https://www.google.com/url')) {
                 // When opening subsequent google.com links, we should also append the authuser
                 let finalNewUrl = newUrl
