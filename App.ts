@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, Menu, MenuItem, nativeTheme, shell} from 'electron'
+import {app, BrowserWindow, clipboard, ipcMain, Menu, MenuItem, nativeTheme, shell} from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -27,6 +27,31 @@ ipcMain.on('set-selected-account', (event, account) => {
 ipcMain.handle('get-google-accounts', async (event) => {
   return getGoogleAccounts();
 });
+
+// IPC handler for context menu
+ipcMain.on('show-context-menu', (event, context) => {
+    const { selectedText, linkUrl } = context
+    const menuItems: MenuItem[] = []
+
+    if (selectedText) {
+        menuItems.push(new MenuItem({
+            label: 'Copy',
+            click: () => clipboard.writeText(selectedText)
+        }))
+    }
+
+    if (linkUrl) {
+        menuItems.push(new MenuItem({
+            label: 'Copy Link',
+            click: () => clipboard.writeText(linkUrl)
+        }))
+    }
+
+    if (menuItems.length > 0) {
+        const contextMenu = Menu.buildFromTemplate(menuItems)
+        contextMenu.popup()
+    }
+})
 
 const menu = new Menu()
 menu.append(new MenuItem({
@@ -167,7 +192,8 @@ Menu.setApplicationMenu(menu)
 function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkFallback?: boolean } = {}) {
     const window = new BrowserWindow({
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
         }
     });
 
