@@ -53,6 +53,36 @@ ipcMain.on('show-context-menu', (event, context) => {
     }
 })
 
+// IPC handlers for link hover status bar
+ipcMain.on('show-link-hover', (event, url) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window) {
+        window.webContents.executeJavaScript(`
+            (function() {
+                const statusBar = document.getElementById('electron-link-status-bar');
+                if (statusBar) {
+                    statusBar.textContent = ${JSON.stringify(url)};
+                    statusBar.style.display = 'block';
+                }
+            })();
+        `)
+    }
+})
+
+ipcMain.on('hide-link-hover', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window) {
+        window.webContents.executeJavaScript(`
+            (function() {
+                const statusBar = document.getElementById('electron-link-status-bar');
+                if (statusBar) {
+                    statusBar.style.display = 'none';
+                }
+            })();
+        `)
+    }
+})
+
 const menu = new Menu()
 menu.append(new MenuItem({
     role: 'appMenu',
@@ -210,6 +240,16 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
           }
         `);
       }
+
+      // Inject status bar for link hover display
+      window.webContents.executeJavaScript(`
+        if (!document.getElementById('electron-link-status-bar')) {
+          const statusBar = document.createElement('div');
+          statusBar.id = 'electron-link-status-bar';
+          statusBar.style.cssText = 'position: fixed; bottom: 0; left: 0; z-index: 999999; background: rgba(0, 0, 0, 0.8); color: white; padding: 4px 8px; font-size: 12px; font-family: system-ui, -apple-system, sans-serif; display: none; max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+          document.body.appendChild(statusBar);
+        }
+      `);
     });
 
     if (url === undefined) {

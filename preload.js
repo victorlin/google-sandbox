@@ -37,4 +37,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
         ipcRenderer.send('show-context-menu', context);
     }, true);
+
+    // Handle link hover to show URL in status bar
+    document.addEventListener('mouseover', (event) => {
+        const target = event.target.closest('a');
+        if (target && target.href) {
+            ipcRenderer.send('show-link-hover', target.href);
+        }
+    }, true);
+
+    document.addEventListener('mouseout', (event) => {
+        const target = event.target.closest('a');
+        if (target && target.href) {
+            ipcRenderer.send('hide-link-hover');
+        }
+    }, true);
 });
