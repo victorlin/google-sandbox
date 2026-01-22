@@ -344,18 +344,34 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
                 return { action: 'deny' };
             }
 
-            if (newUrl.includes('google.com') && !newUrl.startsWith('https://www.google.com/url')) {
+            const hostname = url.hostname;
+            // Only treat specific Google hosts as internal, and avoid the /url redirector on www.google.com
+            const googleHosts = [
+                'mail.google.com',
+                'calendar.google.com',
+                'www.google.com',
+                'accounts.google.com'
+            ];
+
+            const isGoogleHost = googleHosts.includes(hostname);
+            const isGoogleRedirector = hostname === 'www.google.com' && url.pathname === '/url';
+
+            if (isGoogleHost && !isGoogleRedirector) {
                 // When opening subsequent google.com links, we should also append the authuser
-                let finalNewUrl = newUrl
-                if (selectedAccount && (newUrl.includes('mail.google.com') || newUrl.includes('calendar.google.com'))) {
-                    if (newUrl.includes('?')) {
-                        finalNewUrl += `&authuser=${selectedAccount}`
+                let finalNewUrl = newUrl;
+                const isMailOrCalendar =
+                    hostname === 'mail.google.com' || hostname === 'calendar.google.com';
+
+                if (selectedAccount && isMailOrCalendar) {
+                    if (url.search) {
+                        finalNewUrl += `&authuser=${selectedAccount}`;
                     } else {
-                        finalNewUrl += `?authuser=${selectedAccount}`
+                        finalNewUrl += `?authuser=${selectedAccount}`;
                     }
                 }
-                createWindow({ url: finalNewUrl })
-                return { action: 'deny' }
+
+                createWindow({ url: finalNewUrl });
+                return { action: 'deny' };
             } else {
                 console.log(`Opening URL in default web browser: ${newUrl}`)
                 shell.openExternal(newUrl)
