@@ -67,10 +67,11 @@
       // Clear existing options
       accountSelectionContainer.innerHTML = '';
 
-      const accounts = await window.electronAPI.getGoogleAccounts();
+      const settings = await window.electronAPI.getSettings();
+      const accounts = settings?.googleAccounts ?? [];
 
       if (!accounts || accounts.length === 0) {
-        accountSelectionContainer.textContent = 'No accounts configured in config.json.';
+        accountSelectionContainer.textContent = 'No accounts configured.';
         sendSelectedAccountToApp(null);
         return;
       }
@@ -107,10 +108,10 @@
   }
 
   // Initial population
-  if (window.electronAPI && typeof window.electronAPI.getGoogleAccounts === 'function') {
+  if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
     populateAccountOptions();
   } else {
-    console.error('electronAPI not found or getGoogleAccounts is not a function. Preload script might not be loaded correctly.');
+    console.error('electronAPI not found or getSettings is not a function. Preload script might not be loaded correctly.');
     accountSelectionContainer.textContent = 'Error: Preload script not loaded.';
   }
 </script>

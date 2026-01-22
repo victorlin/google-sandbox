@@ -2,8 +2,11 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
     setSelectedAccount: (account) => ipcRenderer.send('set-selected-account', account),
-    getGoogleAccounts: () => ipcRenderer.invoke('get-google-accounts'),
-    showContextMenu: (context) => ipcRenderer.send('show-context-menu', context)
+    getSettings: () => ipcRenderer.invoke('get-settings'),
+    showContextMenu: (context) => ipcRenderer.send('show-context-menu', context),
+    saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+    openSettings: () => ipcRenderer.send('open-settings'),
+    onReloadSettings: (callback) => ipcRenderer.on('reload-settings', callback)
 });
 
 // Intercept shift-clicked links to add a marker for the main process

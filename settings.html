@@ -1,0 +1,323 @@
+<body>
+    <div id="accountListContainer">
+        <div id="accountList"></div>
+        <button id="addAccountBtn" class="icon-button" aria-label="Add account" type="button">+</button>
+    </div>
+    <div id="saveOrCancel">
+        <button id="saveBtn" class="icon-button action-button" aria-label="Save changes" type="button">✓</button>
+        <button id="cancelBtn" class="icon-button action-button" aria-label="Cancel" type="button">✗</button>
+    </div>
+</body>
+
+<script>
+    let accounts = [];
+    let dragSourceIndex = null;
+    let pendingInsertIndex = null;
+    const accountListElement = document.getElementById('accountList');
+    const dropIndicator = document.createElement('div');
+    dropIndicator.className = 'drop-indicator';
+
+    function placeDropIndicator(insertIndex) {
+        if (!accountListElement) return;
+        const boundedIndex = Math.max(0, Math.min(insertIndex, accounts.length));
+        pendingInsertIndex = boundedIndex;
+        if (dropIndicator.parentElement) {
+            dropIndicator.parentElement.removeChild(dropIndicator);
+        }
+        const children = Array.from(accountListElement.children).filter(child => child !== dropIndicator);
+        const referenceNode = children[boundedIndex] || null;
+        accountListElement.insertBefore(dropIndicator, referenceNode);
+    }
+
+    function clearDropIndicator() {
+        pendingInsertIndex = null;
+        if (dropIndicator.parentElement) {
+            dropIndicator.parentElement.removeChild(dropIndicator);
+        }
+    }
+
+    function ensureListDropTarget() {
+        if (!accountListElement || accountListElement.dataset.dropSetup === 'true') {
+            return;
+        }
+
+        accountListElement.addEventListener('dragover', (event) => {
+            if (dragSourceIndex === null) {
+                return;
+            }
+            event.preventDefault();
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+            }
+            const accountItems = Array.from(accountListElement.querySelectorAll('.account-item'));
+            let insertIndex = accountItems.length;
+            accountItems.some((item, index) => {
+                const rect = item.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                if (event.clientY < midpoint) {
+                    insertIndex = index;
+                    return true;
+                }
+                return false;
+            });
+            placeDropIndicator(insertIndex);
+        });
+
+        accountListElement.addEventListener('dragleave', (event) => {
+            if (!accountListElement) return;
+            const related = event.relatedTarget;
+            if (related instanceof Element && accountListElement.contains(related)) {
+                return;
+            }
+            clearDropIndicator();
+        });
+
+        accountListElement.addEventListener('drop', (event) => {
+            if (dragSourceIndex === null) {
+                return;
+            }
+            event.preventDefault();
+            moveAccountToIndex(pendingInsertIndex ?? accounts.length);
+        });
+
+        accountListElement.dataset.dropSetup = 'true';
+    }
+
+    function moveAccountToIndex(insertIndex) {
+        if (dragSourceIndex === null || insertIndex === null) {
+            return;
+        }
+        const normalizedIndex = Math.max(0, Math.min(insertIndex, accounts.length));
+        const [movedAccount] = accounts.splice(dragSourceIndex, 1);
+        let targetIndex = normalizedIndex;
+        if (dragSourceIndex < normalizedIndex) {
+            targetIndex -= 1;
+        }
+        targetIndex = Math.max(0, Math.min(targetIndex, accounts.length));
+        accounts.splice(targetIndex, 0, movedAccount);
+        dragSourceIndex = null;
+        clearDropIndicator();
+        renderAccounts();
+    }
+
+    async function loadAccounts() {
+        try {
+            const settings = await window.electronAPI.getSettings();
+            accounts = settings?.googleAccounts ?? [];
+            renderAccounts();
+        } catch (error) {
+            console.error('Error loading accounts:', error);
+            alert('Error loading accounts');
+        }
+    }
+
+    function renderAccounts() {
+        const accountList = accountListElement;
+        if (!accountList) return;
+        ensureListDropTarget();
+        accountList.innerHTML = '';
+
+        if (accounts.length === 0) {
+            accountList.innerHTML = '<p class="empty-message">No accounts configured. Click "+" to get started.</p>';
+            return;
+        }
+
+        accounts.forEach((account, index) => {
+            const accountItem = document.createElement('div');
+            accountItem.className = 'account-item';
+            const handle = document.createElement('button');
+            handle.type = 'button';
+            handle.draggable = true;
+            handle.className = 'drag-handle icon-button';
+            handle.textContent = '⋮⋮';
+            handle.setAttribute('aria-label', 'Reorder account');
+            handle.addEventListener('dragstart', (event) => {
+                dragSourceIndex = index;
+                if (event.dataTransfer) {
+                    event.dataTransfer.setData('text/plain', '');
+                    event.dataTransfer.effectAllowed = 'move';
+                }
+                accountItem.classList.add('dragging');
+            });
+            handle.addEventListener('dragend', () => {
+                dragSourceIndex = null;
+                accountItem.classList.remove('dragging');
+                clearDropIndicator();
+            });
+
+            const input = document.createElement('input');
+            input.type = 'email';
+            input.value = account;
+            input.addEventListener('input', (e) => {
+                accounts[index] = e.target.value;
+            });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = '-';
+            removeBtn.className = 'remove-btn icon-button';
+            removeBtn.setAttribute('aria-label', 'Remove account');
+            removeBtn.addEventListener('click', () => {
+                accounts.splice(index, 1);
+                renderAccounts();
+            });
+
+            accountItem.appendChild(handle);
+            accountItem.appendChild(input);
+            accountItem.appendChild(removeBtn);
+            accountList.appendChild(accountItem);
+        });
+    }
+
+    document.getElementById('addAccountBtn').addEventListener('click', () => {
+        accounts.push('');
+        renderAccounts();
+        const inputs = document.querySelectorAll('.account-item input');
+        if (inputs.length > 0) {
+            inputs[inputs.length - 1].focus();
+        }
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        try {
+            const filteredAccounts = accounts.filter(acc => acc.trim() !== '');
+            const result = await window.electronAPI.saveSettings({ googleAccounts: filteredAccounts });
+            if (result.success) {
+                window.close();
+            } else {
+                alert('Error saving accounts: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error saving accounts:', error);
+            alert('Error saving accounts');
+        }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        window.close();
+    });
+
+    if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
+        loadAccounts();
+    } else {
+        console.error('electronAPI not found');
+        alert('Error: Preload script not loaded');
+    }
+</script>
+
+<style>
+    :root {
+        color-scheme: light dark;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: light-dark(white, #1e1e1e);
+        color: light-dark(black, white);
+        padding: 20px;
+        margin: 0;
+    }
+
+    #accountListContainer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #accountList {
+        min-height: 50px;
+    }
+
+    .empty-message {
+        color: light-dark(#666, #999);
+        font-style: italic;
+        margin: 20px 0;
+    }
+
+    .account-item {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 7px 11px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .account-item input {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 14px;
+        border: 1px solid light-dark(#ccc, #555);
+        border-radius: 4px;
+        background-color: light-dark(white, #2d2d2d);
+        color: light-dark(black, white);
+    }
+
+    .account-item input:focus {
+        outline: none;
+        border-color: light-dark(#0066cc, #4d94ff);
+        box-shadow: 0 0 0 2px light-dark(rgba(0, 102, 204, 0.1), rgba(77, 148, 255, 0.2));
+    }
+
+    button {
+        border: none;
+        background: none;
+        color: light-dark(#333, #fff);
+        cursor: pointer;
+        transition: color 0.2s, transform 0.1s;
+    }
+
+    button:hover,
+    button:focus {
+        color: light-dark(#000, #9ec9ff);
+    }
+
+    button:active {
+        transform: scale(0.95);
+    }
+
+    #addAccountBtn {
+        font-size: 20px;
+        padding: 7px 11px;
+        margin-top: 0;
+        align-self: flex-end;
+    }
+
+    .icon-button {
+        font-size: 18px;
+        padding: 4px;
+    }
+
+    .action-button {
+        font-size: 22px;
+    }
+
+    .remove-btn {
+        font-size: 20px;
+    }
+
+    .drag-handle {
+        cursor: grab;
+        font-size: 20px;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .account-item.dragging {
+        opacity: 0.6;
+    }
+
+    .drop-indicator {
+        height: 2px;
+        background-color: light-dark(#0066cc, #9ec9ff);
+        border-radius: 1px;
+        margin: 4px 0;
+    }
+
+    #saveOrCancel {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+</style>

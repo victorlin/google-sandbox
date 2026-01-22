@@ -6,17 +6,9 @@ A lightweight, self-contained browser for Google applications.
 
 ## Configuration
 
-Create a file named `config.json` at the top-level directory with contents:
+Google accounts are set within the app. When you first run the app, click the "Settings" button on the start page to add, edit, or remove accounts.
 
-```json
-{
-  "googleAccounts": [
-    "user1@gmail.com",
-    "user2@gmail.com",
-    "user3@gmail.com"
-  ]
-}
-```
+Accounts are stored in your user data directory and persist across app updates.
 
 ## To Run:
 1. Clone repository

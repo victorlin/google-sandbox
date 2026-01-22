@@ -2,20 +2,54 @@ import {app, BrowserWindow, clipboard, ipcMain, Menu, MenuItem, nativeTheme, she
 import * as path from 'path'
 import * as fs from 'fs'
 
-function getGoogleAccounts(): string[] {
+type Settings = {
+    googleAccounts: string[]
+}
+
+const DEFAULT_SETTINGS: Settings = {
+    googleAccounts: []
+}
+
+function getSettingsFile(): string {
+    const settingsPath = path.join(app.getPath('userData'), 'settings.json')
+
+    if (!fs.existsSync(settingsPath)) {
+        console.log(`Creating new settings file: ${settingsPath}`)
+        fs.writeFileSync(settingsPath, JSON.stringify(DEFAULT_SETTINGS, null, 2))
+    }
+
+    return settingsPath
+}
+
+function getSettings(): Settings {
     try {
-        const configPath = path.join(app.getAppPath(), 'build', 'config.json')
-        const rawData = fs.readFileSync(configPath)
-        const config = JSON.parse(rawData.toString())
-        return config.googleAccounts || []
+        const file = getSettingsFile()
+        const contents = fs.readFileSync(file)
+        const settings = JSON.parse(contents.toString())
+        return {
+            ...DEFAULT_SETTINGS,
+            ...settings,
+        }
     } catch (error) {
-        console.error('Failed to read or parse config.json:', error)
-        return []
+        console.error('Failed to read or parse settings file:', error)
+        return { ...DEFAULT_SETTINGS }
+    }
+}
+
+function saveSettings(settings: Settings): void {
+    try {
+        const settingsFile = getSettingsFile()
+        fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2))
+        console.log('Saved settings to file:', settings)
+    } catch (error) {
+        console.error('Failed to save settings to file:', error)
+        throw error
     }
 }
 
 let selectedAccount: string | null = null
 let startWindow: BrowserWindow | null = null
+let settingsWindow: BrowserWindow | null = null
 
 // Listen for the selected account from the renderer process
 ipcMain.on('set-selected-account', (event, account) => {
@@ -23,9 +57,24 @@ ipcMain.on('set-selected-account', (event, account) => {
     selectedAccount = account
 })
 
-// IPC handler for renderer to request accounts
-ipcMain.handle('get-google-accounts', async (event) => {
-  return getGoogleAccounts();
+ipcMain.handle('get-settings', async () => {
+  return getSettings();
+});
+
+ipcMain.handle('save-settings', async (event, newSettings: Settings) => {
+  try {
+    const oldSettings = getSettings();
+    saveSettings({ ...oldSettings, ...newSettings });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    return { success: false, error: String(error) };
+  }
+});
+
+// IPC handler for renderer to open settings window
+ipcMain.on('open-settings', () => {
+  createSettingsWindow();
 });
 
 // IPC handler for context menu
@@ -86,6 +135,23 @@ ipcMain.on('hide-link-hover', (event) => {
 const menu = new Menu()
 menu.append(new MenuItem({
     role: 'appMenu',
+    submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        {
+            label: 'Settings',
+            accelerator: process.platform === 'darwin' ? 'Cmd+,' : 'Ctrl+,',
+            click: () => { createSettingsWindow() }
+        },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+    ]
 }))
 menu.append(new MenuItem({
     role: 'fileMenu',
@@ -301,6 +367,32 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
     }
 
     return window
+}
+
+function createSettingsWindow() {
+    // Don't open multiple settings windows
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+        settingsWindow.focus()
+        return
+    }
+
+    settingsWindow = new BrowserWindow({
+        width: 600,
+        height: 500,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        },
+        title: 'Settings'
+    })
+
+    settingsWindow.loadFile(path.join(__dirname, 'settings.html'))
+
+    settingsWindow.on('closed', () => {
+        settingsWindow = null
+        if (startWindow && !startWindow.isDestroyed()) {
+            startWindow.webContents.send('reload-settings')
+        }
+    })
 }
 
 app.on('window-all-closed', () => {
