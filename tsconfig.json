@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     // build
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "es2022",
+    "module": "node16",
+    "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "build",
 
