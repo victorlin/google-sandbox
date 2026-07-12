@@ -4,6 +4,16 @@
 
 A lightweight, self-contained browser for Google applications.
 
+## Features
+
+- **Account Management**: Automatically detects Google accounts and allows quick selection on start.
+- **Dedicated Apps Menu**: Quick shortcuts to open Mail, Calendar, Drive, Photos, Maps, and more.
+- **Smart Link Handling**: Keeps Google links inside the app while opening external links in your default system browser.
+- **Link Hover Status**: Displays link URLs on hover in a bottom status bar, just like a standard browser.
+- **Context Menu**: Basic context menu support for copying text and links.
+- **Forced Dark Mode**: Experimental forced dark mode for Gmail.
+- **Shift-Click Support**: Shift-click a link to force it to open within the app window.
+
 ## Installation
 
 1. Go to the latest [CI run on the default branch](https://github.com/victorlin/google-sandbox/actions/workflows/ci.yml?query=branch%3Amain).
