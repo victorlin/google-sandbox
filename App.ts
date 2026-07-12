@@ -271,7 +271,7 @@ menu.append(new MenuItem({
                 if (selectedAccount) {
                     url = `https://voice.google.com/u/?authuser=${selectedAccount}`
                 }
-                createWindow({ url })
+                createWindow({ url, useDarkFallback: true })
             }
         },
         {
