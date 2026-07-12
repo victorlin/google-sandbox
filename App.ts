@@ -50,6 +50,12 @@ function saveSettings(settings: Settings): void {
 let selectedAccount: string | null = null
 let startWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
+const windowStates = new Map<number, boolean>()
+
+ipcMain.on('get-dark-mode-fallback', (event) => {
+    const useDark = windowStates.get(event.sender.id) || false
+    event.returnValue = useDark && nativeTheme.shouldUseDarkColors
+})
 
 // Listen for the selected account from the renderer process
 ipcMain.on('set-selected-account', (event, account) => {
@@ -318,26 +324,25 @@ Menu.setApplicationMenu(menu)
 
 function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkFallback?: boolean } = {}) {
     const window = new BrowserWindow({
+        show: false,
+        backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
         }
     });
 
-    // Conditionally inject fallback dark-mode CSS
-    window.webContents.on('did-finish-load', () => {
-      if (useDarkFallback && nativeTheme.shouldUseDarkColors) {
-        window.webContents.insertCSS(`
-          html {
-            filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(1.2) !important;
-            background: #121212 !important;
-          }
-          img, video, [style*="background-image"] {
-            filter: invert(100%) hue-rotate(180deg) !important;
-          }
-        `);
-      }
+    const webContentsId = window.webContents.id;
+    windowStates.set(webContentsId, useDarkFallback)
+    window.on('closed', () => {
+        windowStates.delete(webContentsId)
+    })
 
+    window.once('ready-to-show', () => {
+        window.show();
+    });
+
+    window.webContents.on('dom-ready', () => {
       // Inject status bar for link hover display
       window.webContents.executeJavaScript(`
         if (!document.getElementById('electron-link-status-bar')) {
@@ -410,6 +415,7 @@ function createSettingsWindow() {
     settingsWindow = new BrowserWindow({
         width: 600,
         height: 500,
+        backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },

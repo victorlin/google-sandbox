@@ -1,5 +1,26 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+const useDarkMode = ipcRenderer.sendSync('get-dark-mode-fallback');
+if (useDarkMode) {
+    const style = document.createElement('style');
+    style.textContent = `
+      html {
+        filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(1.2) !important;
+        background: #000000 !important;
+      }
+      img, video, [style*="background-image"] {
+        filter: invert(100%) hue-rotate(180deg) !important;
+      }
+    `;
+    if (document.documentElement) {
+        document.documentElement.appendChild(style);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement) document.documentElement.appendChild(style);
+        });
+    }
+}
+
 contextBridge.exposeInMainWorld('electronAPI', {
     setSelectedAccount: (account) => ipcRenderer.send('set-selected-account', account),
     getSettings: () => ipcRenderer.invoke('get-settings'),
