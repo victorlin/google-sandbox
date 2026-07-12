@@ -14,9 +14,9 @@ A lightweight, self-contained browser for Google applications.
 
 ## Configuration
 
-Google accounts are set within the app. When you first run the app, click the "Settings" button on the start page to add, edit, or remove accounts.
+Google accounts are automatically detected by the app. To add accounts, log in by navigating to any Google service. The app will automatically find your active sessions and add them to your available accounts list on the start page.
 
-Accounts are stored in your user data directory and persist across app updates.
+(Accounts are stored in your user data directory and sync automatically. If you ever need to view or manually override them, you can still access the "Settings" window from the application menu).
 
 ## To Run:
 1. Clone repository
