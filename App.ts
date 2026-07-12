@@ -222,20 +222,8 @@ menu.append(new MenuItem({
         },
         {
             role: 'help',
-            label: 'Open Calendar',
-            accelerator: process.platform === 'darwin' ? 'Cmd+2' : 'Ctrl+2',
-            click: () => {
-                let url = 'https://calendar.google.com/calendar'
-                if (selectedAccount) {
-                    url = `https://calendar.google.com/calendar/u/?authuser=${selectedAccount}`
-                }
-                createWindow({ url })
-            }
-        },
-        {
-            role: 'help',
             label: 'Open Voice',
-            accelerator: process.platform === 'darwin' ? 'Cmd+3' : 'Ctrl+3',
+            accelerator: process.platform === 'darwin' ? 'Cmd+2' : 'Ctrl+2',
             click: () => {
                 let url = 'https://voice.google.com/'
                 if (selectedAccount) {
@@ -247,7 +235,7 @@ menu.append(new MenuItem({
         {
             role: 'help',
             label: 'Open Drive',
-            accelerator: process.platform === 'darwin' ? 'Cmd+4' : 'Ctrl+4',
+            accelerator: process.platform === 'darwin' ? 'Cmd+3' : 'Ctrl+3',
             click: () => {
                 let url = 'https://drive.google.com/'
                 if (selectedAccount) {
@@ -256,17 +244,18 @@ menu.append(new MenuItem({
                 createWindow({ url })
             }
         },
+        { type: 'separator' },
+        {
+            role: 'help',
+            label: 'Open Calendar',
+            accelerator: process.platform === 'darwin' ? 'Cmd+4' : 'Ctrl+4',
+            click: () => { createWindow({ url: 'https://calendar.google.com/calendar' }) }
+        },
         {
             role: 'help',
             label: 'Open Photos',
             accelerator: process.platform === 'darwin' ? 'Cmd+5' : 'Ctrl+5',
-            click: () => {
-                let url = 'https://photos.google.com/'
-                if (selectedAccount) {
-                    url = `https://photos.google.com/u/?authuser=${selectedAccount}`
-                }
-                createWindow({ url })
-            }
+            click: () => { createWindow({ url: 'https://photos.google.com/' }) }
         },
         {
             role: 'help',
