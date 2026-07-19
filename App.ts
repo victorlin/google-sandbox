@@ -65,46 +65,61 @@ ipcMain.on('set-selected-account', (event, account) => {
 
 ipcMain.handle('get-settings', async () => {
     const currentSettings = getSettings();
-    try {
-        const win = new BrowserWindow({
-            show: false,
-            webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: true
-            }
-        });
 
-        await win.loadURL('https://accounts.google.com/AccountChooser');
+    // Do fetch asynchronously so we don't block
+    (async () => {
+        try {
+            const win = new BrowserWindow({
+                show: false,
+                webPreferences: {
+                    nodeIntegration: false,
+                    contextIsolation: true
+                }
+            });
 
-        const script = `
-            (() => {
-                const lines = document.body.innerText.split('\\n').map(l => l.trim()).filter(l => l.length > 0);
-                const activeEmails = [];
-                for (let i = 0; i < lines.length; i++) {
-                    const emailMatch = lines[i].match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/);
-                    if (emailMatch) {
-                        const next1 = (lines[i+1] || '').toLowerCase();
-                        const next2 = (lines[i+2] || '').toLowerCase();
-                        // If the next line says "signed out", we skip it
-                        if (!next1.includes('signed out') && !next2.includes('signed out')) {
-                            activeEmails.push(emailMatch[0]);
+            await win.loadURL('https://accounts.google.com/AccountChooser');
+
+            const script = `
+                (() => {
+                    const lines = document.body.innerText.split('\\n').map(l => l.trim()).filter(l => l.length > 0);
+                    const activeEmails = [];
+                    for (let i = 0; i < lines.length; i++) {
+                        const emailMatch = lines[i].match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/);
+                        if (emailMatch) {
+                            const next1 = (lines[i+1] || '').toLowerCase();
+                            const next2 = (lines[i+2] || '').toLowerCase();
+                            // If the next line says "signed out", we skip it
+                            if (!next1.includes('signed out') && !next2.includes('signed out')) {
+                                activeEmails.push(emailMatch[0]);
+                            }
                         }
                     }
-                }
-                return Array.from(new Set(activeEmails));
-            })();
-        `;
-        const detectedAccounts: string[] = await win.webContents.executeJavaScript(script);
-        win.destroy();
+                    return Array.from(new Set(activeEmails));
+                })();
+            `;
+            const detectedAccounts: string[] = await win.webContents.executeJavaScript(script);
+            win.destroy();
 
-        if (detectedAccounts.length > 0) {
-            // Sync detected accounts into settings
-            currentSettings.googleAccounts = detectedAccounts;
-            saveSettings(currentSettings);
+            if (detectedAccounts.length > 0) {
+                const freshSettings = getSettings();
+                const accountsChanged = JSON.stringify(freshSettings.googleAccounts) !== JSON.stringify(detectedAccounts);
+                
+                if (accountsChanged) {
+                    freshSettings.googleAccounts = detectedAccounts;
+                    saveSettings(freshSettings);
+                    
+                    if (startWindow && !startWindow.isDestroyed()) {
+                        startWindow.webContents.send('reload-settings');
+                    }
+                    if (settingsWindow && !settingsWindow.isDestroyed()) {
+                        settingsWindow.webContents.send('reload-settings');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Failed to detect accounts:", e);
         }
-    } catch (e) {
-        console.error("Failed to detect accounts:", e);
-    }
+    })();
 
     return currentSettings;
 });

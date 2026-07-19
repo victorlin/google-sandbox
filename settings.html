@@ -199,6 +199,11 @@
 
     if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
         loadAccounts();
+        if (window.electronAPI.onReloadSettings) {
+            window.electronAPI.onReloadSettings(() => {
+                loadAccounts();
+            });
+        }
     } else {
         console.error('electronAPI not found');
         alert('Error: Preload script not loaded');

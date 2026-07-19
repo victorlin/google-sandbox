@@ -110,6 +110,11 @@
   // Initial population
   if (window.electronAPI && typeof window.electronAPI.getSettings === 'function') {
     populateAccountOptions();
+    if (window.electronAPI.onReloadSettings) {
+      window.electronAPI.onReloadSettings(() => {
+        populateAccountOptions();
+      });
+    }
   } else {
     console.error('electronAPI not found or getSettings is not a function. Preload script might not be loaded correctly.');
     accountSelectionContainer.textContent = 'Error: Preload script not loaded.';
