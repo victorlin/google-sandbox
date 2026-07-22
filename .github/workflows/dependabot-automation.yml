@@ -1,0 +1,14 @@
+name: Dependabot automation
+
+on: pull_request
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  merge-pr:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh pr merge "${{ github.event.pull_request.html_url }}" --auto --squash
