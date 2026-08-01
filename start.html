@@ -1,23 +1,23 @@
 <body>
-    <div id="accountSelectionContainer">
-        <!-- Radio buttons will be generated here -->
-    </div>
-    <div id="serviceButggtonsContainer">
-        Account-specific:
-        <ul>
-            <li>Mail: CMD+1</li>
-            <li>Voice: CMD+2</li>
-            <li>Drive: CMD+3</li>
-        </ul>
-        Account selection has no effect:
-        <ul>
-            <li>Calendar: CMD+4</li>
-            <li>Photos: CMD+5</li>
-            <li>Youtube Studio: CMD+6</li>
-            <li>Maps: CMD+7</li>
-        </ul>
-    </div>
-    <input id="urlInput" type="text" />
+  <div id="accountSelectionContainer">
+    <!-- Radio buttons will be generated here -->
+  </div>
+  <div id="serviceButggtonsContainer">
+    Account selectable:
+    <ul>
+      <li>Mail: CMD+1</li>
+      <li>Voice: CMD+2</li>
+      <li>Drive: CMD+3</li>
+      <li>Calendar: CMD+4</li>
+      <li>Photos: CMD+5</li>
+      <li>Maps: CMD+7</li>
+    </ul>
+    Account selection has no effect:
+    <ul>
+      <li>Youtube Studio: CMD+6</li>
+    </ul>
+  </div>
+  <input id="urlInput" type="text" />
 </body>
 
 <script>
@@ -122,46 +122,46 @@
 </script>
 
 <style>
-:root {
-  color-scheme: light dark;
-}
+  :root {
+    color-scheme: light dark;
+  }
 
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: light-dark(white, black);
-  color: light-dark(black, white);
-  font-family: sans-serif;
-}
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: light-dark(white, black);
+    color: light-dark(black, white);
+    font-family: sans-serif;
+  }
 
 
-#accountSelectionContainer, #serviceButtonsContainer {
-  display: inline-block;
-  width: 50%;
-  vertical-align: top;
-}
+  #accountSelectionContainer,
+  #serviceButtonsContainer {
+    display: inline-block;
+    width: 50%;
+    vertical-align: top;
+  }
 
-#accountSelectionContainer {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid gray;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-}
+  #accountSelectionContainer {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
 
-label {
-  display: block;
-  margin-bottom: 5px;
-}
+  label {
+    display: block;
+    margin-bottom: 5px;
+  }
 
-#urlInput {
-  margin-top: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px;
-  font-size: 16px;
-}
-
+  #urlInput {
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+  }
 </style>
