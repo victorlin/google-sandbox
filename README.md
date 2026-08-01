@@ -36,3 +36,7 @@ Google accounts are automatically detected by the app. To add accounts, log in b
 ## To Package for Your Computer:
 1. Run ```npm run make```
 2. Install resulting package in `out/make/**`
+
+## Related projects
+
+- https://github.com/Treadder/G-Switcher
