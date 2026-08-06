@@ -302,7 +302,7 @@ menu.append(new MenuItem({
             click: () => {
                 let url = 'https://drive.google.com/'
                 if (selectedAccount) {
-                    url = `https://drive.google.com/u/?authuser=${selectedAccount}`
+                    url = `https://accounts.google.com/AccountChooser?continue=https://drive.google.com&Email=${selectedAccount}`
                 }
                 createWindow({ url })
             }
