@@ -494,9 +494,10 @@ async function checkForUpdates(silent = true): Promise<void> {
 
         const release = await response.json()
         const latestTag = release.tag_name || ''
-        const currentVersion = app.getVersion()
+        const targetSha = release.target_commitish || ''
+        const { commitSha: currentSha } = getAppVersionInfo()
 
-        if (isNewerVersion(latestTag, currentVersion)) {
+        if (isUpdateAvailable(targetSha, currentSha)) {
             const dmgAsset = Array.isArray(release.assets)
                 ? release.assets.find((asset: any) => asset.name && asset.name.endsWith('.dmg'))
                 : null
@@ -506,7 +507,7 @@ async function checkForUpdates(silent = true): Promise<void> {
                 type: 'info',
                 title: 'Update Available',
                 message: `A new version of Google Sandbox (${latestTag}) is available.`,
-                detail: release.body,
+                detail: release.html_url,
                 buttons: ['Download now', 'Remind me later'],
                 defaultId: 0,
                 cancelId: 1
@@ -519,7 +520,7 @@ async function checkForUpdates(silent = true): Promise<void> {
             dialog.showMessageBox({
                 type: 'info',
                 title: 'No Updates Available',
-                message: `You are on the latest version of Google Sandbox (v${currentVersion}).`
+                message: 'You are on the latest version of Google Sandbox.'
             })
         }
     } catch (error) {
@@ -534,18 +535,24 @@ async function checkForUpdates(silent = true): Promise<void> {
     }
 }
 
-function isNewerVersion(latest: string, current: string): boolean {
-    const parse = (v: string) => v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0)
-    const l = parse(latest)
-    const c = parse(current)
-    const len = Math.max(l.length, c.length)
-    for (let i = 0; i < len; i++) {
-        const numL = l[i] || 0
-        const numC = c[i] || 0
-        if (numL > numC) return true
-        if (numL < numC) return false
+function getAppVersionInfo(): { commitSha: string } {
+    try {
+        const versionPath = path.join(__dirname, 'version.json')
+        if (fs.existsSync(versionPath)) {
+            const contents = fs.readFileSync(versionPath, 'utf8')
+            return JSON.parse(contents)
+        }
+    } catch (e) {
+        console.error('Failed to read version.json:', e)
     }
-    return false
+    return { commitSha: '' }
+}
+
+function isUpdateAvailable(targetSha: string, currentSha: string): boolean {
+    if (!targetSha || !currentSha) {
+        return false
+    }
+    return !currentSha.startsWith(targetSha) && !targetSha.startsWith(currentSha)
 }
 
 app.on('window-all-closed', () => {

@@ -27,9 +27,9 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: version
         run: |
-          CALVER=$(date +'%Y.%m.%d').${{ github.run_number }}
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          CALVER=$(date +'%Y.%m.%d').${SHORT_SHA}
           echo "version=${CALVER}" >> $GITHUB_OUTPUT
-          npm version ${CALVER} --no-git-tag-version
 
       - run: npm run make
 
@@ -47,5 +47,5 @@ jobs:
         run: |
           gh release create "v${{ steps.version.outputs.version }}" \
             out/make/*.dmg \
+            --target ${{ github.sha }} \
             --generate-notes
-
