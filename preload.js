@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     showContextMenu: (context) => ipcRenderer.send('show-context-menu', context),
     saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
     openSettings: () => ipcRenderer.send('open-settings'),
+    checkForUpdates: () => ipcRenderer.send('check-for-updates'),
     onReloadSettings: (callback) => ipcRenderer.on('reload-settings', callback)
 });
 

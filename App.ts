@@ -1,4 +1,4 @@
-import {app, BrowserWindow, clipboard, ipcMain, Menu, MenuItem, nativeTheme, shell} from 'electron'
+import {app, BrowserWindow, clipboard, dialog, ipcMain, Menu, MenuItem, nativeTheme, net, shell} from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -195,11 +195,19 @@ ipcMain.on('hide-link-hover', (event) => {
     }
 })
 
+ipcMain.on('check-for-updates', () => {
+    checkForUpdates(false)
+})
+
 const menu = new Menu()
 menu.append(new MenuItem({
     role: 'appMenu',
     submenu: [
         { role: 'about' },
+        {
+            label: 'Check for Updates...',
+            click: () => { checkForUpdates(false) }
+        },
         { type: 'separator' },
         {
             label: 'Settings',
@@ -465,10 +473,89 @@ function createSettingsWindow() {
     })
 }
 
+async function checkForUpdates(silent = true): Promise<void> {
+    try {
+        const response = await net.fetch('https://api.github.com/repos/victorlin/google-sandbox/releases/latest', {
+            headers: {
+                'User-Agent': 'Google-Sandbox-App'
+            }
+        })
+
+        if (!response.ok) {
+            if (!silent) {
+                dialog.showMessageBox({
+                    type: 'error',
+                    title: 'Update Check Failed',
+                    message: `Unable to check for updates (HTTP ${response.status}).`
+                })
+            }
+            return
+        }
+
+        const release = await response.json()
+        const latestTag = release.tag_name || ''
+        const currentVersion = app.getVersion()
+
+        if (isNewerVersion(latestTag, currentVersion)) {
+            const dmgAsset = Array.isArray(release.assets)
+                ? release.assets.find((asset: any) => asset.name && asset.name.endsWith('.dmg'))
+                : null
+            const downloadUrl = dmgAsset ? dmgAsset.browser_download_url : release.html_url
+
+            const { response: buttonIndex } = await dialog.showMessageBox({
+                type: 'info',
+                title: 'Update Available',
+                message: `A new version of Google Sandbox (${latestTag}) is available.`,
+                detail: release.body,
+                buttons: ['Download now', 'Remind me later'],
+                defaultId: 0,
+                cancelId: 1
+            })
+
+            if (buttonIndex === 0 && downloadUrl) {
+                shell.openExternal(downloadUrl)
+            }
+        } else if (!silent) {
+            dialog.showMessageBox({
+                type: 'info',
+                title: 'No Updates Available',
+                message: `You are on the latest version of Google Sandbox (v${currentVersion}).`
+            })
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error)
+        if (!silent) {
+            dialog.showMessageBox({
+                type: 'error',
+                title: 'Update Check Failed',
+                message: 'Failed to connect to update server.'
+            })
+        }
+    }
+}
+
+function isNewerVersion(latest: string, current: string): boolean {
+    const parse = (v: string) => v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0)
+    const l = parse(latest)
+    const c = parse(current)
+    const len = Math.max(l.length, c.length)
+    for (let i = 0; i < len; i++) {
+        const numL = l[i] || 0
+        const numC = c[i] || 0
+        if (numL > numC) return true
+        if (numL < numC) return false
+    }
+    return false
+}
+
 app.on('window-all-closed', () => {
     app.quit()
 })
 
 app.whenReady().then(() => {
     createWindow()
+    setTimeout(() => {
+        checkForUpdates(true)
+    }, 3000)
 })
+

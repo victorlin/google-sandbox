@@ -12,15 +12,19 @@ A lightweight, self-contained browser for Google applications.
 - **Link Hover Status**: Displays link URLs on hover in a bottom status bar, just like a standard browser.
 - **Context Menu**: Basic context menu support for copying text and links.
 - **Forced Dark Mode**: Experimental forced dark mode for Gmail and Voice.
-- **Shift-Click Support**: Shift-click a link to force it to open within the app window.
+- **Auto-Updates**: Automatically checks for new releases on launch and prompts to download updates.
 
 ## Installation
 
-1. Go to the latest [CI run on the default branch](https://github.com/victorlin/google-sandbox/actions/workflows/ci.yml?query=branch%3Amain).
-2. Download the "app" artifact.
+1. Go to the latest [GitHub Release](https://github.com/victorlin/google-sandbox/releases/latest).
+2. Download the `.dmg` installer.
 3. Open `.dmg` and drag the app to Applications folder.
 4. Run `xattr -r -d com.apple.quarantine "/Applications/Google Sandbox.app"` (the app isn't notarized).
 5. Open the app.
+
+## Auto-Updates
+
+Google Sandbox automatically checks for new releases on launch. If an update is found, a prompt appears allowing you to download the installer. You can also manually check for updates at any time by selecting **Google Sandbox > Check for Updates...** from the application menu bar.
 
 ## Configuration
 
