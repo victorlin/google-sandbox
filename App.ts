@@ -1,4 +1,4 @@
-import {app, BrowserWindow, clipboard, dialog, ipcMain, Menu, MenuItem, nativeTheme, net, shell} from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, MenuItem, nativeTheme, net, shell } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -103,11 +103,11 @@ ipcMain.handle('get-settings', async () => {
             if (detectedAccounts.length > 0) {
                 const freshSettings = getSettings();
                 const accountsChanged = JSON.stringify(freshSettings.googleAccounts) !== JSON.stringify(detectedAccounts);
-                
+
                 if (accountsChanged) {
                     freshSettings.googleAccounts = detectedAccounts;
                     saveSettings(freshSettings);
-                    
+
                     if (startWindow && !startWindow.isDestroyed()) {
                         startWindow.webContents.send('reload-settings');
                     }
@@ -125,19 +125,19 @@ ipcMain.handle('get-settings', async () => {
 });
 
 ipcMain.handle('save-settings', async (event, newSettings: Settings) => {
-  try {
-    const oldSettings = getSettings();
-    saveSettings({ ...oldSettings, ...newSettings });
-    return { success: true };
-  } catch (error) {
-    console.error('Error saving settings:', error);
-    return { success: false, error: String(error) };
-  }
+    try {
+        const oldSettings = getSettings();
+        saveSettings({ ...oldSettings, ...newSettings });
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        return { success: false, error: String(error) };
+    }
 });
 
 // IPC handler for renderer to open settings window
 ipcMain.on('open-settings', () => {
-  createSettingsWindow();
+    createSettingsWindow();
 });
 
 // IPC handler for context menu
@@ -384,8 +384,8 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
     });
 
     window.webContents.on('dom-ready', () => {
-      // Inject status bar for link hover display
-      window.webContents.executeJavaScript(`
+        // Inject status bar for link hover display
+        window.webContents.executeJavaScript(`
         if (!document.getElementById('electron-link-status-bar')) {
           const statusBar = document.createElement('div');
           statusBar.id = 'electron-link-status-bar';
@@ -436,7 +436,7 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
             } else {
                 console.log(`Opening URL in default web browser: ${newUrl}`)
                 shell.openExternal(newUrl)
-                    .then(() => {})
+                    .then(() => { })
                     .catch(err => console.error('Failed to open external URL:', err))
                 return { action: 'deny' }
             }
