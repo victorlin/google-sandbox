@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch git tags
+        run: git fetch --tags --force
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: 'package.json'
+
+      - run: npm ci
+
+      - name: Generate version
+        id: version
+        run: |
+          DATE=$(date -u +'%Y.%m.%d')
+          latest_counter=$( (git tag -l | grep -E "^v?${DATE}\.[0-9]+$" || true) | sed -E "s/^v?${DATE}\.//" | sort -n | tail -n 1 )
+          if [ -z "$latest_counter" ]; then
+            counter=0
+          else
+            counter=$((latest_counter + 1))
+          fi
+          VERSION="v${DATE}.${counter}"
+          echo "Generated version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - run: npm run make
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app
+          path: out/make/*.dmg
+          if-no-files-found: error
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            out/make/*.dmg \
+            --target ${{ github.sha }} \
+            --generate-notes

@@ -7,9 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: macos-latest
@@ -23,14 +20,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Generate CalVer version
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        id: version
-        run: |
-          SHORT_SHA=${GITHUB_SHA:0:7}
-          CALVER=$(date +'%Y.%m.%d').${SHORT_SHA}
-          echo "version=${CALVER}" >> $GITHUB_OUTPUT
-
       - run: npm run make
 
       - uses: actions/upload-artifact@v7
@@ -39,13 +28,3 @@ jobs:
           name: app
           path: out/make/*.dmg
           if-no-files-found: error
-
-      - name: Publish Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ steps.version.outputs.version }}" \
-            out/make/*.dmg \
-            --target ${{ github.sha }} \
-            --generate-notes
