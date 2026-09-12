@@ -7,6 +7,7 @@ A lightweight, self-contained browser for Google applications.
 ## Features
 
 - **Account Management**: Automatically detects Google accounts and allows quick selection on start.
+- **Keyboard Navigation**: Vim-style keybindings (`j`/`k` and `ctrl+n`/`ctrl+p`) to navigate the account list on the start page.
 - **Dedicated Apps Menu**: Quick shortcuts to open Mail, Calendar, Drive, Photos, Maps, and more.
 - **Smart Link Handling**: Keeps Google links inside the app while opening external links in your default system browser.
 - **Link Hover Status**: Displays link URLs on hover in a bottom status bar, just like a standard browser.
