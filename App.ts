@@ -421,10 +421,12 @@ function createWindow({ url, useDarkFallback = false }: { url?: string; useDarkF
                 return { action: 'deny' };
             }
 
-            if (newUrl.includes('google.com') && !newUrl.startsWith('https://www.google.com/url')) {
+            // Open Google links in-app, with the exception of /url redirects
+            const isGoogleHost = url.hostname === 'google.com' || url.hostname.endsWith('.google.com');
+            if (isGoogleHost && !newUrl.startsWith('https://www.google.com/url')) {
                 // When opening subsequent google.com links, we should also append the authuser
                 let finalNewUrl = newUrl
-                if (selectedAccount && (newUrl.includes('mail.google.com') || newUrl.includes('calendar.google.com'))) {
+                if (selectedAccount && (url.hostname === 'mail.google.com' || url.hostname === 'calendar.google.com')) {
                     if (newUrl.includes('?')) {
                         finalNewUrl += `&authuser=${selectedAccount}`
                     } else {
