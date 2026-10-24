@@ -43,7 +43,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: app
-          path: out/make/*.dmg
+          path: out/make/dmg/*/*.dmg
           if-no-files-found: error
 
       - name: Publish Release
@@ -51,6 +51,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.version.outputs.version }}" \
-            out/make/*.dmg \
+            out/make/dmg/*/*.dmg \
             --target ${{ github.sha }} \
             --generate-notes
