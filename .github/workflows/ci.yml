@@ -26,5 +26,5 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           name: app
-          path: out/make/*.dmg
+          path: out/make/dmg/*/*.dmg
           if-no-files-found: error
