@@ -30,10 +30,17 @@
       const url = urlInput.value.trim();
       if (url) {
         // Try to prepend https:// if no scheme is present
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          window.location.href = 'https://' + url;
-        } else {
-          window.location.href = url;
+        const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url);
+        const candidateUrl = hasScheme ? url : `https://${url}`;
+
+        try {
+          const parsedUrl = new URL(candidateUrl);
+          const isHttp = parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+          if (isHttp && parsedUrl.hostname) {
+            window.location.href = parsedUrl.href;
+          }
+        } catch (e) {
+          console.warn('Invalid URL entered:', candidateUrl);
         }
       }
     }
