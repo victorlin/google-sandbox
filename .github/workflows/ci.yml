@@ -21,10 +21,3 @@ jobs:
       - run: npm ci
 
       - run: npm run make
-
-      - uses: actions/upload-artifact@v7
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          name: app
-          path: out/make/dmg/*/*.dmg
-          if-no-files-found: error
